@@ -9,3 +9,6 @@ langchain-groq
 chromadb
 sentence-transformers
 pypdf
+huggingface-hub
+torch
+transformers

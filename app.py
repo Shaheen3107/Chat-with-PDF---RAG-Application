@@ -1,3 +1,7 @@
+import subprocess
+import sys
+subprocess.check_call([sys.executable, "-m", "pip", "install", "pypdf"])
+
 import streamlit as st
 import os
 import tempfile

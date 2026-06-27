@@ -6,7 +6,7 @@ import streamlit as st
 import os
 import tempfile
 import pypdf
-from langchain.schema import Document
+from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma

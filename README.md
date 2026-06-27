@@ -6,10 +6,10 @@ An AI-powered application that lets you upload any PDF and ask questions about i
 [Click here to try it][YOUR_STREAMLIT_LINK_HERE](https://chat-with-pdf---rag-application-nv7capqqtvwxvxbkzzqmmx.streamlit.app/)
 
 ## 📸 Screenshot
-![Chat with PDF App](<img width="1920" height="1036" alt="RAG_1" src="https://github.com/user-attachments/assets/2b0ee4ba-7b5c-45af-ace3-b338807df1e5" />
-)
-![Chat with PDF App](<img width="1920" height="1028" alt="RAG_2" src="https://github.com/user-attachments/assets/0256b233-5eb4-4803-8973-e57ae7724f33" />
-)
+![Chat with PDF App]<img width="1920" height="1036" alt="RAG_1" src="https://github.com/user-attachments/assets/2b0ee4ba-7b5c-45af-ace3-b338807df1e5" />
+&
+![Chat with PDF App]<img width="1920" height="1028" alt="RAG_2" src="https://github.com/user-attachments/assets/0256b233-5eb4-4803-8973-e57ae7724f33" />
+
 ---
 
 ## 🧠 How It Works

@@ -1,9 +1,11 @@
 streamlit
-pypdf
-langchain-groq
+langchain
 langchain-core
 langchain-text-splitters
-langchain-chroma
 langchain-huggingface
-sentence-transformers
+langchain-chroma
+langchain-groq
 chromadb
+sentence-transformers
+pypdf==4.3.1
+huggingface-hub

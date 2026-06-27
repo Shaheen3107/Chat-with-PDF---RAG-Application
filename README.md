@@ -3,7 +3,7 @@
 An AI-powered application that lets you upload any PDF and ask questions about it using **Retrieval Augmented Generation (RAG)** with LangChain and Groq LLM.
 
 ## 🚀 Live Demo
-[Click here to try it]([YOUR_STREAMLIT_LINK_HERE](https://chat-with-pdf---rag-application-nv7capqqtvwxvxbkzzqmmx.streamlit.app/))
+[Click here to try it][YOUR_STREAMLIT_LINK_HERE](https://chat-with-pdf---rag-application-nv7capqqtvwxvxbkzzqmmx.streamlit.app/)
 
 ## 📸 Screenshot
 ![Chat with PDF App](<img width="1920" height="1036" alt="RAG_1" src="https://github.com/user-attachments/assets/2b0ee4ba-7b5c-45af-ace3-b338807df1e5" />

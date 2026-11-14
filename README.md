@@ -1,31 +1,34 @@
-# 📄 Chat with PDF — RAG Application
+# 📄 Chat with PDF — Hybrid RAG with Page Citations
 
-An AI-powered application that lets you upload any PDF and ask questions about it using **Retrieval Augmented Generation (RAG)** with LangChain and Groq LLM.
+Upload a PDF and ask questions about it. Retrieval combines semantic search (ChromaDB embeddings) with BM25 keyword search, and every answer cites the page(s) it came from.
 
 ## 🚀 Live Demo
-[Click here to try it][YOUR_STREAMLIT_LINK_HERE](https://chat-with-pdf---rag-application-nv7capqqtvwxvxbkzzqmmx.streamlit.app/)
+[Click here to try it](YOUR_STREAMLIT_LINK_HERE)
 
 ## 📸 Screenshot
-![Chat with PDF App]<img width="1920" height="1036" alt="RAG_1" src="https://github.com/user-attachments/assets/2b0ee4ba-7b5c-45af-ace3-b338807df1e5" />
-&
-![Chat with PDF App]<img width="1920" height="1028" alt="RAG_2" src="https://github.com/user-attachments/assets/0256b233-5eb4-4803-8973-e57ae7724f33" />
+![Chat with PDF App](screenshot.png)
 
 ---
 
 ## 🧠 How It Works
 
-This application uses a RAG (Retrieval Augmented Generation) pipeline:
-
-```
-PDF Upload
+PDF upload
+→ Extract text page by page (pypdf), keeping the page number
 → Split into chunks (RecursiveCharacterTextSplitter)
-→ Convert to embeddings (sentence-transformers)
-→ Store in vector database (ChromaDB)
-→ User asks question
-→ Retrieve top 3 similar chunks (cosine similarity)
-→ Pass chunks + question to LLM (Groq)
-→ Generate grounded answer
-```
+→ Add a contextual header to each chunk: [Document: name.pdf | Page: N]
+→ Index two ways:
+     • dense: all-MiniLM-L6-v2 embeddings in ChromaDB
+     • sparse: BM25 keyword index (rank-bm25)
+→ User asks a question
+→ Both indexes return their top candidates
+→ Merge the two rankings with Reciprocal Rank Fusion (RRF)
+→ Send the top chunks + question to Groq (Llama 3.1 8B)
+→ Answer cites pages, e.g. "(p.2)", and the sources are shown under the answer
+
+Why hybrid?
+1. Semantic search finds passages that mean the same thing as the question, even with different words.
+2. BM25 finds exact terms (names, numbers, codes, tool names) that embeddings can blur.
+3. RRF merges the two lists using rank positions, because BM25 scores and cosine distances are on different scales and cannot be added directly.
 
 ---
 
@@ -33,24 +36,26 @@ PDF Upload
 
 | Component | Technology |
 |---|---|
-| Framework | Streamlit |
+| UI | Streamlit |
 | RAG Framework | LangChain |
 | Embeddings | sentence-transformers (all-MiniLM-L6-v2) |
 | Vector Database | ChromaDB |
-| LLM | Groq (LLaMA 3.1 8B) |
-| PDF Loader | PyPDFLoader |
+| Keyword search | rank-bm25 (BM25Okapi) |
+| Rank fusion | Reciprocal Rank Fusion (k = 60) |
+| LLM | Groq (Llama 3.1 8B Instant) |
+| PDF Reader | pypdf |
 | Text Splitter | RecursiveCharacterTextSplitter |
 
 ---
 
 ## ✨ Features
 
-- Upload any PDF — resume, research paper, notes, report
-- Ask natural language questions about the document
-- Answers grounded in actual document content — no hallucination
-- View retrieved chunks — see exactly what RAG found to answer your question
-- Conversation history — remembers previous questions in session
-- Free to use — powered by Groq's free API
+- Hybrid retrieval with a sidebar switch: hybrid, semantic or keyword
+- Page-level citations in every answer
+- "Sources" panel under each answer showing the exact chunks and page numbers used
+- Answers restricted to the document, with a fallback of "I don't know based on the provided document" (this reduces, but does not eliminate, hallucination)
+- Conversation history within a session
+- Index is built once per uploaded file, not on every message
 
 ---
 
@@ -87,46 +92,30 @@ python -m streamlit run app.py
 
 ---
 
-## 📦 Requirements
-
-```
-streamlit
-langchain
-langchain-community
-langchain-core
-langchain-text-splitters
-langchain-huggingface
-langchain-chroma
-langchain-groq
-chromadb
-sentence-transformers
-pypdf
-```
-
----
-
 ## 📁 Project Structure
 
 ```
-chat-with-pdf/
-├── app.py              # Main Streamlit application
-├── requirements.txt    # Dependencies
-├── README.md          # Project documentation
-└── screenshot.png     # App screenshot
+├── app.py            # Streamlit UI only (sidebar, upload, chat screen)
+├── rag_core.py       # Full RAG pipeline: PDF, chunking, embeddings, ChromaDB, BM25, LLM, chain
+├── requirements.txt
+├── README.md
+└── screenshot.png    # App screenshot
 ```
 
 ---
 
 ## 💡 Key Concepts Demonstrated
 
-- **RAG Architecture** — two-stage pipeline (ingestion + retrieval/generation)
-- **Document Loading** — PDF text extraction using PyPDFLoader
-- **Chunking** — splitting documents into overlapping chunks for precise retrieval
-- **Semantic Embeddings** — converting text to dense vectors using sentence-transformers
-- **Vector Database** — storing and searching embeddings with ChromaDB
-- **Retrieval** — cosine similarity search to find relevant chunks
-- **Generation** — grounded answer generation using Groq LLM
-- **Hallucination Prevention** — answers only from retrieved document context
+- **RAG pipeline** — ingestion, retrieval, grounded generation
+- PDF text extraction with pypdf, page by page
+- Chunking with overlap and metadata (page numbers) carried through to the answer
+- Contextual chunk headers
+- Semantic embeddings: converting text to vectors with sentence-transformers
+- Vector database: storing and searching embeddings with ChromaDB
+- Dense vs sparse retrieval (cosine similarity search and BM25), and why combining them helps
+- Reciprocal Rank Fusion
+- Prompting for citations and for refusing when the context lacks the answer
+- Hallucination reduction: answers only from retrieved document context
 
 ---
 
@@ -139,5 +128,5 @@ chat-with-pdf/
 
 ## 📝 Related Projects
 
-- [ATS Resume Checker](https://github.com/Shaheen3107/ATS-Resume-Checker) — NLP + BERT semantic matching
-- [Fake News Detector](https://github.com/Shaheen3107/fake-news-detector) — ML + NLP classification
+- [ATS Resume Checker](https://github.com/Shaheen3107/ATS-Resume-Checker)
+- [Fake News Detector](https://github.com/Shaheen3107/fake-news-detector) 

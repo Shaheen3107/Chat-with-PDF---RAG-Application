@@ -57,7 +57,7 @@ def chunk_pages(pages, chunk_size=1000, chunk_overlap=100):
 
     for i, chunk in enumerate(chunks):
         chunk.metadata["chunk_id"] = i
-        header = f"[Document: {chunk_metadata["source"]} | page: {chunk.metadata["page"]}]"
+        header = f"[Document: {chunk_metadata['source']} | page: {chunk.metadata['page']}]"
         chunk.page_content = header + "\n" + chunk.page_content
     return chunks
 

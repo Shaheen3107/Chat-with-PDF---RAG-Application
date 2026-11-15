@@ -3,7 +3,7 @@
 Upload a PDF and ask questions about it. Retrieval combines semantic search (ChromaDB embeddings) with BM25 keyword search, and every answer cites the page(s) it came from.
 
 ## 🚀 Live Demo
-[Click here to try it](YOUR_STREAMLIT_LINK_HERE)
+[Click here to try it](https://chat-with-pdf---rag-application-nv7capqqtvwxvxbkzzqmmx.streamlit.app/)
 
 ## 📸 Screenshot
 ![Chat with PDF App](screenshot.png)

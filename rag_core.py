@@ -11,7 +11,7 @@ import uuid
 # In[2]:
 
 
-get_ipython().run_line_magic('pip', 'install rank-bm25')
+
 
 
 # In[4]:
@@ -25,6 +25,7 @@ from langchain_groq import ChatGroq
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from rank_bm25 import BM25Okapi
+from langchain_core.prompts import ChatPromptTemplate
 
 
 # In[7]:
@@ -34,11 +35,13 @@ from rank_bm25 import BM25Okapi
 
 def load_pdf(path, display_name):
     reader = pypdf.PdfReader(path)
+    print("pdf pages:", len(reader.pages))
     pages = []
 
     for number, page in enumerate(reader.pages, start=1):
         text = page.extract_text()
-        if text in text.split():
+        print(number, "text length:", len(text) if text else 0)
+        if text and text.strip():
             pages.append(Document(page_content=text, metadata={"page": number, "source": display_name}))
     return pages
 
@@ -57,7 +60,7 @@ def chunk_pages(pages, chunk_size=1000, chunk_overlap=100):
 
     for i, chunk in enumerate(chunks):
         chunk.metadata["chunk_id"] = i
-        header = f"[Document: {chunk_metadata['source']} | page: {chunk.metadata['page']}]"
+        header = f"[Document: {chunk.metadata['source']} | page: {chunk.metadata['page']}]"
         chunk.page_content = header + "\n" + chunk.page_content
     return chunks
 
@@ -74,12 +77,12 @@ def tokenize(text):
 # In[10]:
 
 
-def reciprocal_rank_fusion(ranking, k=60):
+def reciprocal_rank_fusion(rankings, k=60):
     points = {}
     for ranking in rankings:
         for rank, chunk_id in enumerate(ranking, start=1):
             points[chunk_id] = points.get(chunk_id, 0) + 1 / (k + rank)
-        return sorted(points, key=points.get, reverse=True) # best first
+    return sorted(points, key=points.get, reverse=True) # best first
 
 
 # In[12]:
@@ -90,7 +93,7 @@ class HybridRetriever:
         self.chunks = chunks
         self.vectorstore = vectorstore
         self.k = k     # how many chunks to return
-        self.bm25 = BM250kapi([tokenize(c.page_content) for c in chunks])
+        self.bm25 = BM25Okapi([tokenize(c.page_content) for c in chunks])
 
     def semantic_search(self, query):
         """Search by meaning (ChromaDB). Returns chunk_ids, best first."""
@@ -104,7 +107,7 @@ class HybridRetriever:
         results = []
         for i, score in enumerate(scores):
             if score > 0:                    # skip chunks with no matching word
-                result.append((score,i))     # keep the score together with the chunk number
+                results.append((score,i))     # keep the score together with the chunk number
 
         results.sort(reverse=True)             # highest score first
         return [i for score, i in results[:10]]   # top 10 chunk numbers
@@ -129,9 +132,11 @@ def new_collection_name():
     # Unique name per upload so chunks from different PDFs never mix in Chroma.
     return "pdf_" + uuid.uuid4().hex[:12]
 
-def build_retriever(pdf_path, display_name,chunk_size=1000, chunk_overlap=100, k=4):
+def build_retriever(pdf_path, display_name,chunk_size=1000, chunk_overlap=100, k=6):
     pages = load_pdf(pdf_path, display_name)
+    
     chunks = chunk_pages(pages, chunk_size, chunk_overlap)
+    
 
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     vectorstore = Chroma.from_documents(chunks, embeddings, collection_name=new_collection_name())
@@ -146,9 +151,10 @@ def build_retriever(pdf_path, display_name,chunk_size=1000, chunk_overlap=100, k
 # ---------- Step 5: LLM + prompt + chain ----------
 
 PROMPT_TEMPLATE = """Answer the question using ONLY the context below.
+You may combine information from different passages to answer.
 Each passage starts with a header showing its page number.
 After each fact in your answer, cite the page like (p.2).
-If the answer is not in the context, say "I don't know based on the provided document."
+If the context does not contain enough information, say "I don't know based on the provided document."
 
 Context:
 {context}
@@ -161,7 +167,7 @@ Answer:
 
 def build_answer_chain(api_key):
     """prompt -> Groq LLM -> plain text"""
-    llm = ChatGroq(api_key=api_key, model_name="llama-3.1-8b-instant")
+    llm = ChatGroq(api_key=api_key, model_name="openai/gpt-oss-120b")
     prompt = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
     return prompt | llm | StrOutputParser()
 

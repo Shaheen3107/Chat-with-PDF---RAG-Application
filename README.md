@@ -22,7 +22,7 @@ PDF upload
 → User asks a question
 → Both indexes return their top candidates
 → Merge the two rankings with Reciprocal Rank Fusion (RRF)
-→ Send the top chunks + question to Groq (Llama 3.1 8B)
+→ Send the top chunks + question to Groq (GPT-OSS 20B)
 → Answer cites pages, e.g. "(p.2)", and the sources are shown under the answer
 
 Why hybrid?
@@ -42,7 +42,7 @@ Why hybrid?
 | Vector Database | ChromaDB |
 | Keyword search | rank-bm25 (BM25Okapi) |
 | Rank fusion | Reciprocal Rank Fusion (k = 60) |
-| LLM | Groq (Llama 3.1 8B Instant) |
+| LLM | Groq (GPT-OSS 20B) |
 | PDF Reader | pypdf |
 | Text Splitter | RecursiveCharacterTextSplitter |
 
@@ -63,8 +63,8 @@ Why hybrid?
 
 **Clone the repo:**
 ```bash
-git clone https://github.com/Shaheen3107/chat-with-pdf.git
-cd chat-with-pdf
+git clone https://github.com/Shaheen3107/Chat-with-PDF---RAG-Application.git
+cd Chat-with-PDF---RAG-Application
 ```
 
 **Create virtual environment:**
